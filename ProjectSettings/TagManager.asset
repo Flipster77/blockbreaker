@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - Breakable
+  - ShowOnPause
+  - AffectedByPause
   layers:
   - Default
   - TransparentFX

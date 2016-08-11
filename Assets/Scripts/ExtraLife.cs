@@ -6,16 +6,22 @@ public class ExtraLife : MonoBehaviour {
 	public GameObject collectEffect;
 	public AudioClip collectSound;
 
-	private Lives lives;
+    private Rigidbody2D rigidBody2D;
+
+    private Lives lives;
 	private Paddle paddle;
 	private LoseCollider loseCollider;
 
-	// Use this for initialization
-	void Start () {
+    private Vector2 velocityAtPause;
+    private float angularVelocityAtPause;
+
+    // Use this for initialization
+    void Start () {
 		lives = GameObject.FindObjectOfType<Lives>();
 		paddle = GameObject.FindObjectOfType<Paddle>();
 		loseCollider = GameObject.FindObjectOfType<LoseCollider>();
-	}
+        rigidBody2D = GetComponent<Rigidbody2D>();
+    }
 	
 	void OnTriggerEnter2D(Collider2D collider) {
 		// Hit the paddle, gain a life
@@ -41,4 +47,17 @@ public class ExtraLife : MonoBehaviour {
 		
 		Destroy(starEffect, smokeLifetime);
 	}
+
+    void OnPauseGame() {
+        velocityAtPause = rigidBody2D.velocity;
+        angularVelocityAtPause = rigidBody2D.angularVelocity;
+        rigidBody2D.isKinematic = true;
+    }
+
+    void OnResumeGame() {
+        rigidBody2D.isKinematic = false;
+        rigidBody2D.velocity = velocityAtPause;
+        rigidBody2D.angularVelocity = angularVelocityAtPause;
+        rigidBody2D.WakeUp();
+    }
 }

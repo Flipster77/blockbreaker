@@ -5,13 +5,20 @@ public class Ball : MonoBehaviour {
 
 	public bool hasLaunched { get; private set; }
 
+    private Rigidbody2D rigidBody2D;
+    private AudioSource audioSource;
+
 	private Paddle paddle;
 	private LaunchArrow launchArrow;
 
 	private Vector3 paddleToBallVector;
 	private Vector3 BallToArrowVector;
-	
-	private const float minFlickerIntensity = 5.5f;
+
+    private bool gamePaused = false;
+    private Vector2 velocityAtPause;
+    private float angularVelocityAtPause;
+
+    private const float minFlickerIntensity = 5.5f;
 	private const float maxFlickerIntensity = 7f;
 	private const float flickerSpeed = 0.1f;
 
@@ -20,15 +27,17 @@ public class Ball : MonoBehaviour {
 		// Find paddle and launch arrow objects
 		paddle = GameObject.FindObjectOfType<Paddle>();
 		launchArrow = GameObject.FindObjectOfType<LaunchArrow>();
-		
-		ResetBall();
+        rigidBody2D = GetComponent<Rigidbody2D>();
+
+
+        ResetBall();
 		StartCoroutine(FlickerLight());
 	}
 	
 	// Update is called once per frame
 	void Update () {
 	
-		if (!hasLaunched) {
+		if (!hasLaunched && !gamePaused) {
 			// Lock the ball relative to the paddle
 			this.transform.position = paddle.transform.position + paddleToBallVector;
 			
@@ -54,12 +63,27 @@ public class Ball : MonoBehaviour {
 		// Play the bounce sound
 		if (hasLaunched) {
 			GetComponent<AudioSource>().Play();
-			
-			GetComponent<Rigidbody2D>().velocity += tweak;
+
+            rigidBody2D.velocity += tweak;
 		}
 	}
-	
-	public void ResetBall() {
+
+    void OnPauseGame() {
+        velocityAtPause = rigidBody2D.velocity;
+        angularVelocityAtPause = rigidBody2D.angularVelocity;
+        rigidBody2D.isKinematic = true;
+        gamePaused = true;
+    }
+
+    void OnResumeGame() {
+        rigidBody2D.isKinematic = false;
+        rigidBody2D.velocity = velocityAtPause;
+        rigidBody2D.angularVelocity = angularVelocityAtPause;
+        rigidBody2D.WakeUp();
+        gamePaused = false;
+    }
+
+    public void ResetBall() {
 		// Ball hasn't launched
 		hasLaunched = false;
 	
